@@ -2,63 +2,64 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surprise For You! 🎁</title>
-    <!-- Link file CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Birthday Quest! 🎮</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
-    <!-- Font Awesome cho Icon -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Màn hình 1: Hộp quà bí ẩn -->
-    <div id="gift-screen">
-        <div class="instruction">Nhấn vào hộp quà nhé! ✨</div>
-        <div class="gift-box" id="open-gift">
-            <i class="fa-solid fa-gift"></i>
+    <div id="game-container">
+        
+        <!-- Thanh trạng thái (Máu và Level) -->
+        <div id="hud">
+            <div id="level-display">STAGE 1-5</div>
+            <div id="lives-display">❤️❤️❤️</div>
         </div>
+
+        <!-- Vùng chơi game -->
+        <div id="game-area">
+            <!-- Nhân vật người chơi (Mặc giáp kim cương Minecraft) -->
+            <div id="player"></div>
+            <!-- Mặt đất (Dirt & Grass block) -->
+            <div class="ground"></div>
+        </div>
+
+        <!-- Màn hình bắt đầu -->
+        <div id="start-screen" class="ui-screen">
+            <h1>BIRTHDAY QUEST</h1>
+            <p>Bầy quái vật đang đến!</p>
+            <p>Nhấn vào chúng để tiêu diệt.</p>
+            <p>Sống sót qua 5 ải để nhận quà!</p>
+            <button class="pixel-btn" id="btn-start">START GAME</button>
+        </div>
+
+        <!-- Màn hình qua ải (Hiện lời chúc) -->
+        <div id="level-clear-screen" class="ui-screen hidden">
+            <h2 id="clear-title">STAGE CLEAR!</h2>
+            <div class="message-box">
+                <p id="wish-text"></p>
+            </div>
+            <button class="pixel-btn" id="btn-next">NEXT STAGE</button>
+        </div>
+
+        <!-- Màn hình Game Over -->
+        <div id="game-over-screen" class="ui-screen hidden">
+            <h2 class="text-red">YOU DIED</h2>
+            <p>Chưa đọc hết lời chúc mà... Thử lại nhé!</p>
+            <button class="pixel-btn" id="btn-restart">RESPAWN</button>
+        </div>
+
+        <!-- Màn hình Phá Đảo (Chiến thắng) -->
+        <div id="victory-screen" class="ui-screen hidden">
+            <h2 class="text-gold">VICTORY!</h2>
+            <p>Chúc mừng sinh nhật!</p>
+            <p>Cậu đã phá đảo trò chơi thành công. Hãy luôn mạnh mẽ và tuyệt vời như một anh hùng nhé!</p>
+            <div class="cake-pixel">🎂</div>
+        </div>
+
     </div>
 
-    <!-- Màn hình 2: Giao diện chính (Ẩn lúc đầu) -->
-    <div id="main-screen" class="hidden">
-        <!-- Đĩa nhạc góc trên -->
-        <div class="music-player">
-            <div class="record" id="record">
-                <i class="fa-solid fa-music"></i>
-            </div>
-            <div class="music-info">
-                <h4>Happy Birthday</h4>
-                <p>Đang phát...</p>
-            </div>
-        </div>
-
-        <!-- Thẻ chúc mừng Glassmorphism -->
-        <div class="glass-card">
-            <h1 class="title">Happy Birthday! 🎂</h1>
-            
-            <div class="content">
-                <p class="message typed-text"></p>
-            </div>
-
-            <!-- Các thẻ ảnh kỉ niệm (Tự thay src ảnh thật của bạn vào) -->
-            <div class="gallery">
-                <div class="photo-frame"><img src="https://images.unsplash.com/photo-1530103862676-de8892431bc4?q=80&w=200&auto=format&fit=crop" alt="Memory 1"></div>
-                <div class="photo-frame"><img src="https://images.unsplash.com/photo-1513151233558-d860c5398176?q=80&w=200&auto=format&fit=crop" alt="Memory 2"></div>
-                <div class="photo-frame"><img src="https://images.unsplash.com/photo-1464349095431-e9a21285b5f3?q=80&w=200&auto=format&fit=crop" alt="Memory 3"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Thẻ Audio (Nhớ thêm file nhạc vào thư mục hoặc dùng link MP3) -->
-    <audio id="bg-music" loop>
-        <source src="https://www.bensound.com/bensound-music/bensound-ukulele.mp3" type="audio/mpeg">
-    </audio>
-
-    <!-- Thư viện Confetti -->
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <!-- Link file JS -->
     <script src="js/script.js"></script>
 </body>
 </html>

@@ -2,178 +2,179 @@
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    user-select: none; /* Tránh bôi đen text khi bấm spam */
 }
 
 body {
-    font-family: 'Poppins', sans-serif;
-    overflow: hidden;
+    font-family: 'Press Start 2P', cursive;
+    background-color: #222;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     height: 100vh;
-    background: #0f0c29; /* Màu nền tối ban đầu */
-    transition: background 1.5s ease-in-out;
+    overflow: hidden;
 }
 
-#gift-screen {
+#game-container {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+    height: 100vh;
+    max-height: 500px;
+    background-color: #78A7FF; /* Màu trời xanh */
+    overflow: hidden;
+    border: 4px solid #fff;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* Thanh máu và Level */
+#hud {
     position: absolute;
+    top: 15px;
+    left: 15px;
+    right: 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+    z-index: 10;
+}
+
+/* Mặt đất */
+.ground {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: 120px;
+    background-color: #875438; /* Đất nâu */
+    border-top: 15px solid #589B4A; /* Cỏ xanh */
+    z-index: 5;
+}
+
+/* Nhân vật (Player) */
+#player {
+    position: absolute;
+    bottom: 120px; /* Đứng trên cỏ */
+    left: 40px;
+    width: 40px;
+    height: 80px;
+    background-color: #00AAAA; /* Áo giáp kim cương */
+    border: 3px solid #000;
+    border-radius: 5px 5px 0 0;
+    z-index: 6;
+}
+
+#player::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    left: 3px;
+    width: 28px;
+    height: 28px;
+    background-color: #FFCBA4; /* Màu da mặt */
+    border: 3px solid #000;
+}
+
+/* Quái vật (Dino/Creeper) */
+.enemy {
+    position: absolute;
+    bottom: 120px;
+    width: 40px;
+    height: 40px;
+    background-color: #55FF55; /* Màu xanh Creeper */
+    border: 3px solid #000;
+    cursor: pointer; /* Hiển thị con trỏ để click */
+    z-index: 6;
+}
+/* Mắt quái vật */
+.enemy::before, .enemy::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    width: 8px;
+    height: 8px;
+    background-color: #000;
+}
+.enemy::before { left: 6px; }
+.enemy::after { right: 6px; }
+
+.enemy:active {
+    background-color: #ff0000; /* Nhấp nháy đỏ khi bị đánh */
+}
+
+/* Các màn hình UI (Start, Qua màn, Game Over) */
+.ui-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 50;
-    transition: opacity 1s ease, transform 1s ease;
-}
-
-.instruction {
+    text-align: center;
+    z-index: 20;
     color: #fff;
-    font-size: 1.5rem;
-    margin-bottom: 20px;
-    animation: pulse 1.5s infinite;
-}
-
-.gift-box {
-    font-size: 100px;
-    color: #ff4757;
-    cursor: pointer;
-    transition: transform 0.3s;
-    animation: shake 2s infinite;
-    text-shadow: 0 0 20px rgba(255, 71, 87, 0.5);
-}
-
-.gift-box:hover {
-    transform: scale(1.1);
-}
-
-#main-screen {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     padding: 20px;
 }
 
-.hidden {
-    opacity: 0;
-    pointer-events: none;
-    transform: scale(0.8);
-}
-
-body.party-mode {
-    background: linear-gradient(45deg, #ff9a9e 0%, #fecfef 99%, #fecfef 100%);
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.25);
-    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.18);
-    padding: 40px;
-    max-width: 600px;
-    width: 100%;
-    text-align: center;
-    transform: translateY(50px);
-    opacity: 0;
-    animation: slideUpFade 1.5s 0.5s forwards;
-}
-
-.title {
-    font-family: 'Dancing Script', cursive;
-    font-size: 3.5rem;
-    color: #ff4757;
-    margin-bottom: 20px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-}
-
-.message {
-    font-size: 1.1rem;
-    color: #333;
-    line-height: 1.8;
-    min-height: 80px;
+.ui-screen h1 {
+    font-size: 28px;
+    color: #FFD700;
     margin-bottom: 30px;
+    text-shadow: 4px 4px 0 #000;
+    line-height: 1.5;
 }
 
-.gallery {
-    display: flex;
-    justify-content: center;
-    gap: 15px;
+.ui-screen h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.ui-screen p {
+    font-size: 12px;
+    line-height: 2;
+    margin-bottom: 15px;
+}
+
+.message-box {
+    background-color: #222;
+    border: 4px solid #fff;
+    padding: 20px;
+    margin-bottom: 30px;
+    max-width: 90%;
+}
+
+.message-box p {
+    margin: 0;
+    color: #55FF55;
+    font-size: 14px;
+}
+
+/* Nút bấm kiểu game retro */
+.pixel-btn {
+    font-family: 'Press Start 2P', cursive;
+    background-color: #888;
+    color: #fff;
+    border: 4px solid;
+    border-color: #fff #555 #555 #fff; /* Hiệu ứng 3D khối */
+    padding: 15px 20px;
+    font-size: 14px;
+    cursor: pointer;
     margin-top: 20px;
 }
 
-.photo-frame {
-    width: 100px;
-    height: 100px;
-    border-radius: 15px;
-    overflow: hidden;
-    border: 3px solid white;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    transition: transform 0.3s;
+.pixel-btn:active {
+    border-color: #555 #fff #fff #555; /* Đổi bóng khi bấm */
 }
 
-.photo-frame img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.hidden {
+    display: none !important;
 }
 
-.photo-frame:hover {
-    transform: translateY(-10px) rotate(5deg);
-}
-
-/* Đĩa nhạc xoay xoay */
-.music-player {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    background: rgba(255,255,255,0.4);
-    padding: 10px 20px;
-    border-radius: 50px;
-    backdrop-filter: blur(5px);
-}
-
-.record {
-    width: 40px;
-    height: 40px;
-    background: #2f3542;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    color: white;
-    animation: spin 3s linear infinite;
-    animation-play-state: paused;
-}
-
-.record.playing {
-    animation-play-state: running;
-}
-
-/* --- Keyframes Animations --- */
-@keyframes shake {
-    0%, 100% { transform: rotate(0deg); }
-    25% { transform: rotate(-10deg); }
-    50% { transform: rotate(10deg); }
-    75% { transform: rotate(-10deg); }
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-}
-
-@keyframes slideUpFade {
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-@keyframes spin {
-    100% { transform: rotate(360deg); }
-}
+.text-red { color: #FF5555; }
+.text-gold { color: #FFD700; }
+.cake-pixel { font-size: 60px; margin-top: 20px; }
