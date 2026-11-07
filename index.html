@@ -8,53 +8,44 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
- 
+
     <div id="game-container">
         
-        <!-- Thanh trạng thái (Máu và Level) -->
         <div id="hud">
-            <div id="level-display">STAGE 1-5</div>
+            <div id="level-display">STAGE 1/5 (Né: 0/10)</div>
             <div id="lives-display">❤️❤️❤️</div>
         </div>
 
-        <!-- Vùng chơi game -->
         <div id="game-area">
-            <!-- Nhân vật người chơi (Mặc giáp kim cương Minecraft) -->
             <div id="player"></div>
-            <!-- Mặt đất (Dirt & Grass block) -->
-            <div class="ground"></div>
         </div>
 
-        <!-- Màn hình bắt đầu -->
         <div id="start-screen" class="ui-screen">
-            <h1>BIRTHDAY QUEST</h1>
-            <p>Bầy quái vật đang đến!</p>
-            <p>Nhấn vào chúng để tiêu diệt.</p>
-            <p>Sống sót qua 5 ải để nhận quà!</p>
-            <button class="pixel-btn" id="btn-start">START GAME</button>
+            <h1>SURVIVAL QUEST</h1>
+            <p>Mưa chướng ngại vật đang trút xuống!</p>
+            <p class="text-gold">Rê chuột (hoặc ngón tay) để di chuyển và NẾ TRÁNH.</p>
+            <p>Tuyệt đối không được chạm vào chúng!</p>
+            <button class="pixel-btn" id="btn-start">BẮT ĐẦU</button>
         </div>
 
-        <!-- Màn hình qua ải (Hiện lời chúc) -->
         <div id="level-clear-screen" class="ui-screen hidden">
             <h2 id="clear-title">STAGE CLEAR!</h2>
             <div class="message-box">
                 <p id="wish-text"></p>
             </div>
-            <button class="pixel-btn" id="btn-next">NEXT STAGE</button>
+            <button class="pixel-btn" id="btn-next">ẢI TIẾP THEO</button>
         </div>
 
-        <!-- Màn hình Game Over -->
         <div id="game-over-screen" class="ui-screen hidden">
             <h2 class="text-red">YOU DIED</h2>
-            <p>Chưa đọc hết lời chúc mà... Thử lại nhé!</p>
-            <button class="pixel-btn" id="btn-restart">RESPAWN</button>
+            <p>Bị đụng trúng rồi... Chơi lại nhé!</p>
+            <button class="pixel-btn" id="btn-restart">HỒI SINH</button>
         </div>
 
-        <!-- Màn hình Phá Đảo (Chiến thắng) -->
         <div id="victory-screen" class="ui-screen hidden">
             <h2 class="text-gold">VICTORY!</h2>
-            <p>Chúc mừng sinh nhật!</p>
-            <p>Cậu đã phá đảo trò chơi thành công. Hãy luôn mạnh mẽ và tuyệt vời như một anh hùng nhé!</p>
+            <p>Tuyệt đỉnh! Phản xạ của cậu quá tốt.</p>
+            <p>Chúc mừng sinh nhật! Chúc cậu một năm mới bình an, luôn vượt qua mọi sóng gió dễ dàng như cách cậu phá đảo trò chơi này vậy!</p>
             <div class="cake-pixel">🎂</div>
         </div>
 

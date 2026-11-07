@@ -1,38 +1,58 @@
-// --- Dữ liệu Game ---
 const levels = [
-    { enemiesToKill: 5, speed: 2, spawnRate: 80, wish: "Chúc mừng sinh nhật! Khởi động thế thôi, màn 1 dễ mà đúng không?" },
-    { enemiesToKill: 8, speed: 3, spawnRate: 60, wish: "Cậu đỉnh đấy! Tuổi mới chúc cậu luôn mạnh khỏe, tràn đầy năng lượng như khi click nãy giờ!" },
-    { enemiesToKill: 12, speed: 4, spawnRate: 45, wish: "Sắp đến đích rồi! Chúc mọi dự định trong năm nay của cậu đều sẽ thành công rực rỡ." },
-    { enemiesToKill: 15, speed: 5, spawnRate: 30, wish: "Màn 4 căng quá! Chúc cậu luôn gặp may mắn, nụ cười luôn trên môi nhé." },
-    { enemiesToKill: 20, speed: 6, spawnRate: 20, wish: "Bạn là siêu nhân! Chúc cậu một sinh nhật thật hạnh phúc bên gia đình và những người yêu thương. Happy Birthday!" }
+    { targetToDodge: 10, speedY: 3, spawnRate: 60, wish: "Chúc mừng sinh nhật! Mới màn 1 thôi, khởi động cổ tay đi nào!" },
+    { targetToDodge: 15, speedY: 4, spawnRate: 45, wish: "Né hay lắm! Tuổi mới chúc cậu luôn nhạy bén và linh hoạt như thế này nhé!" },
+    { targetToDodge: 20, speedY: 5, spawnRate: 35, wish: "Bắt đầu khó rồi đây! Chúc mọi khó khăn trong cuộc sống của cậu đều bị né tránh thành công." },
+    { targetToDodge: 30, speedY: 6, spawnRate: 25, wish: "Quá đỉnh! Chúc cậu luôn giữ được sự kiên trì và vững vàng trước mọi thử thách." },
+    { targetToDodge: 40, speedY: 7, spawnRate: 15, wish: "Màn cuối bão tố nhưng cậu vẫn qua được! Happy Birthday!" }
 ];
 
 let currentLevel = 0;
 let lives = 3;
-let enemiesKilledInLevel = 0;
+let dodgedCount = 0;
 let isPlaying = false;
-let enemiesArray = [];
+let obstacles = [];
 let spawnTimer = 0;
 let animationId;
 
-// --- Giao diện DOM ---
 const gameArea = document.getElementById('game-area');
+const player = document.getElementById('player');
 const livesDisplay = document.getElementById('lives-display');
 const levelDisplay = document.getElementById('level-display');
 const wishText = document.getElementById('wish-text');
 
-// Các màn hình
 const startScreen = document.getElementById('start-screen');
 const levelClearScreen = document.getElementById('level-clear-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
 const victoryScreen = document.getElementById('victory-screen');
 
-// Nút bấm
 document.getElementById('btn-start').addEventListener('click', startGame);
 document.getElementById('btn-next').addEventListener('click', nextLevel);
 document.getElementById('btn-restart').addEventListener('click', resetGame);
 
-// --- Logic Hệ thống ---
+// --- Hệ Thống Điều Khiển Theo Chuột ---
+function movePlayer(clientX, clientY) {
+    if (!isPlaying) return;
+    const rect = gameArea.getBoundingClientRect();
+    let x = clientX - rect.left;
+    let y = clientY - rect.top;
+
+    // Giới hạn không cho nhân vật văng ra khỏi màn hình
+    if (x < 15) x = 15;
+    if (x > rect.width - 15) x = rect.width - 15;
+    if (y < 15) y = 15;
+    if (y > rect.height - 15) y = rect.height - 15;
+
+    player.style.left = x + 'px';
+    player.style.top = y + 'px';
+}
+
+gameArea.addEventListener('mousemove', (e) => movePlayer(e.clientX, e.clientY));
+gameArea.addEventListener('touchmove', (e) => {
+    e.preventDefault(); // Chống cuộn màn hình trên điện thoại
+    movePlayer(e.touches[0].clientX, e.touches[0].clientY);
+}, { passive: false });
+
+// --- Logic Trò Chơi ---
 function startGame() {
     startScreen.classList.add('hidden');
     resetGameStats();
@@ -55,7 +75,6 @@ function nextLevel() {
     levelClearScreen.classList.add('hidden');
     currentLevel++;
     if (currentLevel >= levels.length) {
-        // Đã phá đảo (Chiến thắng)
         victoryScreen.classList.remove('hidden');
     } else {
         startLevel();
@@ -63,125 +82,147 @@ function nextLevel() {
 }
 
 function startLevel() {
-    enemiesKilledInLevel = 0;
+    dodgedCount = 0;
     updateHUD();
-    clearAllEnemies();
+    clearAllObstacles();
+    
+    // Đưa người chơi về giữa khi bắt đầu
+    player.style.left = '50%';
+    player.style.top = '80%';
+    
     isPlaying = true;
     gameLoop();
 }
 
 function updateHUD() {
-    levelDisplay.innerText = `STAGE ${currentLevel + 1}/5`;
-    let hearts = '';
-    for(let i=0; i<lives; i++) hearts += '❤️';
-    livesDisplay.innerText = hearts;
+    levelDisplay.innerText = `STAGE ${currentLevel + 1} (Né: ${dodgedCount}/${levels[currentLevel].targetToDodge})`;
+    livesDisplay.innerText = '❤️'.repeat(lives);
 }
 
-// Xóa quái vật trên màn hình
-function clearAllEnemies() {
-    enemiesArray.forEach(enemy => enemy.element.remove());
-    enemiesArray = [];
+function clearAllObstacles() {
+    obstacles.forEach(obs => obs.element.remove());
+    obstacles = [];
 }
 
-// Tạo quái vật mới
-function spawnEnemy() {
-    const enemyEl = document.createElement('div');
-    enemyEl.classList.add('enemy');
-    gameArea.appendChild(enemyEl);
+// Hàm xử lý va chạm (Hitbox)
+function isCollide(a, b) {
+    const aRect = a.getBoundingClientRect();
+    const bRect = b.getBoundingClientRect();
+    // Trừ hao 5px để việc né tránh dễ thở hơn một chút
+    return !(
+        aRect.top + 5 > bRect.bottom ||
+        aRect.right - 5 < bRect.left ||
+        aRect.bottom - 5 < bRect.top ||
+        aRect.left + 5 > bRect.right
+    );
+}
 
-    // Vị trí bắt đầu ở mép phải màn hình
-    const startX = gameArea.offsetWidth;
-    enemyEl.style.left = startX + 'px';
+function spawnObstacle() {
+    const el = document.createElement('div');
+    el.classList.add('obstacle');
+    gameArea.appendChild(el);
 
-    const enemyObj = {
-        element: enemyEl,
-        x: startX
+    const gameWidth = gameArea.offsetWidth;
+    const startX = Math.random() * (gameWidth - 30);
+    const patternRand = Math.random();
+    
+    // 3 Quỹ đạo bay: 40% thẳng, 30% chéo, 30% sóng lượn
+    let pattern = 'straight';
+    if (patternRand > 0.7) pattern = 'sine';
+    else if (patternRand > 0.4) pattern = 'diagonal';
+
+    const obs = {
+        element: el,
+        x: startX,
+        y: -40,
+        baseX: startX,
+        speedY: levels[currentLevel].speedY + (Math.random() * 2), // Tốc độ rơi ngẫu nhiên
+        speedX: (Math.random() > 0.5 ? 1 : -1) * (2 + Math.random() * 2), // Tốc độ trượt ngang
+        pattern: pattern
     };
-
-    enemiesArray.push(enemyObj);
-
-    // Lắng nghe sự kiện người chơi click vào quái vật
-    // Dùng pointerdown để hỗ trợ cả chuột trên máy tính và chạm trên điện thoại
-    enemyEl.addEventListener('pointerdown', function() {
-        if (!isPlaying) return;
-        
-        // Tạo hiệu ứng đỏ
-        this.style.backgroundColor = '#FF5555';
-        
-        // Xóa khỏi mảng và DOM
-        const index = enemiesArray.indexOf(enemyObj);
-        if (index > -1) enemiesArray.splice(index, 1);
-        
-        setTimeout(() => this.remove(), 50);
-        
-        enemiesKilledInLevel++;
-        checkLevelComplete();
-    });
-}
-
-function checkLevelComplete() {
-    if (enemiesKilledInLevel >= levels[currentLevel].enemiesToKill) {
-        // Thắng màn này
-        isPlaying = false;
-        cancelAnimationFrame(animationId);
-        
-        // Hiện lời chúc
-        wishText.innerText = levels[currentLevel].wish;
-        
-        // Chờ 0.5s rồi mới hiện bảng để không bị đường đột
-        setTimeout(() => {
-            if(currentLevel === levels.length - 1) {
-                victoryScreen.classList.remove('hidden'); // Nếu là ải 5 thì hiện màn phá đảo
-            } else {
-                levelClearScreen.classList.remove('hidden'); // Màn bình thường thì hiện bảng Next
-            }
-        }, 500);
-    }
+    
+    obstacles.push(obs);
 }
 
 function takeDamage() {
     lives--;
     updateHUD();
     
-    // Hiệu ứng màn hình chớp đỏ khi bị mất máu
-    gameArea.style.backgroundColor = '#ff4d4d';
-    setTimeout(() => { gameArea.style.backgroundColor = '#78A7FF'; }, 100);
+    gameArea.style.backgroundColor = '#660000'; // Nháy đỏ
+    setTimeout(() => { gameArea.style.backgroundColor = '#2b2b2b'; }, 150);
 
     if (lives <= 0) {
         isPlaying = false;
         cancelAnimationFrame(animationId);
-        setTimeout(() => gameOverScreen.classList.remove('hidden'), 300);
+        gameOverScreen.classList.remove('hidden');
     }
 }
 
-// Vòng lặp chính của Game
+function checkLevelComplete() {
+    updateHUD();
+    if (dodgedCount >= levels[currentLevel].targetToDodge) {
+        isPlaying = false;
+        cancelAnimationFrame(animationId);
+        wishText.innerText = levels[currentLevel].wish;
+        
+        setTimeout(() => {
+            if(currentLevel === levels.length - 1) victoryScreen.classList.remove('hidden');
+            else levelClearScreen.classList.remove('hidden');
+        }, 500);
+    }
+}
+
 function gameLoop() {
     if (!isPlaying) return;
 
-    // Sinh quái vật
-    spawnTimer++;
     const currentSettings = levels[currentLevel];
-    
+    spawnTimer++;
     if (spawnTimer >= currentSettings.spawnRate) {
-        spawnEnemy();
+        spawnObstacle();
         spawnTimer = 0;
     }
 
-    // Di chuyển quái vật
-    for (let i = 0; i < enemiesArray.length; i++) {
-        let enemy = enemiesArray[i];
-        enemy.x -= currentSettings.speed;
-        enemy.element.style.left = enemy.x + 'px';
+    const gameWidth = gameArea.offsetWidth;
+    const gameHeight = gameArea.offsetHeight;
 
-        // Nếu quái chạm vào vùng của người chơi (left < 80px)
-        if (enemy.x <= 80) {
-            enemy.element.remove();
-            enemiesArray.splice(i, 1);
-            i--; // Điều chỉnh lại index sau khi xóa
+    for (let i = 0; i < obstacles.length; i++) {
+        let obs = obstacles[i];
+        obs.y += obs.speedY;
+
+        // Tính toán quỹ đạo bay
+        if (obs.pattern === 'diagonal') {
+            obs.x += obs.speedX;
+            // Đụng tường dội lại
+            if (obs.x <= 0 || obs.x >= gameWidth - 30) obs.speedX *= -1; 
+        } else if (obs.pattern === 'sine') {
+            obs.x = obs.baseX + Math.sin(obs.y / 40) * 80;
+        }
+
+        obs.element.style.left = obs.x + 'px';
+        obs.element.style.top = obs.y + 'px';
+
+        // 1. Kiểm tra va chạm với người chơi
+        if (isCollide(player, obs.element)) {
+            obs.element.remove();
+            obstacles.splice(i, 1);
+            i--;
             takeDamage();
+            continue;
+        }
+
+        // 2. Chướng ngại vật rơi xuống đáy an toàn (Đã né thành công)
+        if (obs.y > gameHeight) {
+            dodgedCount++;
+            obs.element.remove();
+            obstacles.splice(i, 1);
+            i--;
+            checkLevelComplete();
+            // Nếu qua ải thì dừng luôn vòng for
+            if(!isPlaying) break; 
         }
     }
 
-    // Lặp lại frame tiếp theo
-    animationId = requestAnimationFrame(gameLoop);
+    if (isPlaying) {
+        animationId = requestAnimationFrame(gameLoop);
+    }
 }
